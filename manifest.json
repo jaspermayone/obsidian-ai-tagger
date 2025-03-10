@@ -1,0 +1,10 @@
+{
+	"id": "ai-tagger",
+	"name": "AI Tagger",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Automatically tag your notes using AI and update frontmatter with generated tags.",
+	"author": "Your Name",
+	"authorUrl": "https://github.com/yourusername",
+	"isDesktopOnly": false
+}
