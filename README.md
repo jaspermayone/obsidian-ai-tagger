@@ -90,11 +90,9 @@ If you encounter any issues or have suggestions, please create an issue on the G
 
 ## Say Thank You
 
-If you are enjoying my plugin, then please support my work by buying me a coffee at <https://buymeacoffee.com/jaspermayone> or sponsoring me on github using the button below.
+If you are enjoying my plugin, then please support my work by buying me a coffee at <https://buymeacoffee.com/jaspermayone> or [sponsoring me on github](https://github.com/sponsors/jaspermayone) .
 
 Please also help spread the word by sharing about the plugin on Twitter, Reddit,
 or any other social media platform you regularly use.
 
-<iframe src="https://github.com/sponsors/jaspermayone/card" title="Sponsor jaspermayone" height="225" width="600" style="border: 0;"></iframe>
-
-[<img style="float:left" src="hhttps://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" width="200">](https://www.buymeacoffee.com/jaspermayone)
+<a href="https://www.buymeacoffee.com/jaspermayone" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
