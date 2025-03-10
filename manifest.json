@@ -1,10 +1,14 @@
 {
-	"id": "ai-tagger",
-	"name": "AI Tagger",
+	"id": "ai-note-tagger",
+	"name": "AI Note Tagger",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Automatically tag your notes using AI and update frontmatter with generated tags.",
-	"author": "Your Name",
-	"authorUrl": "https://github.com/yourusername",
-	"isDesktopOnly": false
+	"author": "Jasper Mayone",
+	"authorUrl": "https://github.com/jaspermayone",
+	"isDesktopOnly": false,
+	"fundingUrl": {
+		"Buy Me a Coffee": "https://buymeacoffee.com/jaspermayone",
+		"GitHub Sponsor": "https://github.com/sponsors/jaspermayone"
+	}
 }

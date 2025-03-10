@@ -16,8 +16,7 @@
 		"tagging",
 		"frontmatter"
 	],
-	"author": "Your Name",
-	"license": "MIT",
+	"author": "Jasper Mayone <me@jaspermayone.com>",
 	"devDependencies": {
 		"@types/js-yaml": "^4.0.5",
 		"@types/node": "^16.11.6",

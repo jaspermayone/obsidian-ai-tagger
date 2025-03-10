@@ -30,7 +30,7 @@ Alternatively, you can manually install the plugin:
 
 Before using the plugin, you need to configure your Claude API key:
 
-1. Get a Claude API key from [Anthropic](https://www.anthropic.com/)
+1. Get a Claude API key from [Anthropic's Console](https://console.anthropic.com/)
 2. In Obsidian, go to Settings > Claude AI Tagger
 3. Enter your API key in the appropriate field
 4. Configure other settings as desired
@@ -88,6 +88,13 @@ This plugin is built with TypeScript and uses the Obsidian API. If you'd like to
 
 If you encounter any issues or have suggestions, please create an issue on the GitHub repository.
 
-## License
+## Say Thank You
 
-This plugin is licensed under the MIT License.
+If you are enjoying my plugin, then please support my work by buying me a coffee at <https://buymeacoffee.com/jaspermayone> or sponsoring me on github using the button below.
+
+Please also help spread the word by sharing about the plugin on Twitter, Reddit,
+or any other social media platform you regularly use.
+
+<iframe src="https://github.com/sponsors/jaspermayone/card" title="Sponsor jaspermayone" height="225" width="600" style="border: 0;"></iframe>
+
+[<img style="float:left" src="hhttps://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" width="200">](https://www.buymeacoffee.com/jaspermayone)

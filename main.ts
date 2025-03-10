@@ -377,7 +377,9 @@ class AITaggerSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("API Key")
-      .setDesc("Your Anthropic API key. Required to use the AI service.")
+      .setDesc(
+        "Your Anthropic API key. Required to use the AI service. Get it from https://console.anthropic.com/ if you don't have one already. We recommend using a dedicated key for this plugin."
+      )
       .addText((text) =>
         text
           .setPlaceholder("Enter your API key")
