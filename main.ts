@@ -143,9 +143,10 @@ export default class AITaggerPlugin extends Plugin {
       const tags = await this.generateTags(content);
       await this.updateNoteFrontmatter(file, tags);
       new Notice(`Successfully added tags: ${tags.join(", ")}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error tagging note:", error);
-      new Notice(`Error tagging note: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new Notice(`Error tagging note: ${errorMessage}`);
     }
   }
 
@@ -169,7 +170,7 @@ export default class AITaggerPlugin extends Plugin {
         const tags = await this.generateTags(content);
         await this.updateNoteFrontmatter(file, tags);
         successful++;
-      } catch (error: any) {
+      } catch (error) {
         console.error(`Error tagging note ${file.path}:`, error);
       }
 
@@ -235,9 +236,10 @@ export default class AITaggerPlugin extends Plugin {
         .split(",")
         .map((tag: string) => tag.trim())
         .filter((tag: string) => tag.length > 0);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error calling Claude API:", error);
-      throw new Error(`Failed to generate tags: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate tags: ${errorMessage}`);
     }
   }
 
@@ -245,7 +247,7 @@ export default class AITaggerPlugin extends Plugin {
     // Read the file content
     const content = await this.app.vault.read(file);
 
-    let frontmatter: any = {};
+    let frontmatter: Record<string, unknown> = {};
     let fileContent = content;
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
 
@@ -324,8 +326,13 @@ class ConfirmModal extends Modal {
       settingsButton.addEventListener("click", () => {
         this.close();
         // Open settings tab
-        (this.app as any).setting.open();
-        (this.app as any).setting.openTabById("obsidian-sample-plugin");
+        // Using type assertion with a more specific interface would be better
+        // if we had access to the internal Obsidian API types
+        if ('setting' in this.app) {
+          const appWithSetting = this.app as unknown as { setting: { open: () => void; openTabById: (id: string) => void } };
+          appWithSetting.setting.open();
+          appWithSetting.setting.openTabById("obsidian-sample-plugin");
+        }
       });
 
       const cancelButton = buttonContainer.createEl("button", {
