@@ -1,4 +1,3 @@
-import * as yaml from "js-yaml";
 import {
   App,
   MarkdownView,
@@ -40,16 +39,15 @@ export default class AITaggerPlugin extends Plugin {
         if (!this.settings.apiKey) {
           new ConfirmModal(
             this.app,
-            "AI Tagging API Key Missing",
+            "AI tagging API key missing",
             () => {},
             true,
             "API key not configured. Please add your API key in the plugin settings."
           ).open();
           return;
         }
-        new Notice(
-          "Select a command to auto-tag the current note or all notes"
-        );
+        // Tag the current note directly when clicking the ribbon icon
+        this.tagCurrentNote();
       }
     );
     ribbonIconEl.addClass("ai-tagger-ribbon-class");
@@ -66,7 +64,7 @@ export default class AITaggerPlugin extends Plugin {
             if (!this.settings.apiKey) {
               new ConfirmModal(
                 this.app,
-                "AI Tagging API Key Missing",
+                "AI tagging API key missing",
                 () => {},
                 true,
                 "API key not configured. Please add your API key in the plugin settings."
@@ -89,7 +87,7 @@ export default class AITaggerPlugin extends Plugin {
         if (!this.settings.apiKey) {
           new ConfirmModal(
             this.app,
-            "AI Tagging API Key Missing",
+            "AI tagging API key missing",
             () => {},
             true,
             "API key not configured. Please add your API key in the plugin settings."
@@ -138,15 +136,31 @@ export default class AITaggerPlugin extends Plugin {
     const file = activeView.file;
     const content = await this.app.vault.read(file);
 
+    // Create a persistent notice
+    const notice = new Notice("Analyzing note content and generating tags...", 0);
+
     try {
-      new Notice("Analyzing note content and generating tags...");
       const tags = await this.generateTags(content);
       await this.updateNoteFrontmatter(file, tags);
-      new Notice(`Successfully added tags: ${tags.join(", ")}`);
+      
+      // Update the notice with success message
+      notice.setMessage(`Successfully added tags: ${tags.join(", ")}`);
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        notice.hide();
+      }, 3000);
     } catch (error) {
       console.error("Error tagging note:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      new Notice(`Error tagging note: ${errorMessage}`);
+      
+      // Update the notice with error message
+      notice.setMessage(`Error tagging note: ${errorMessage}`);
+      
+      // Hide after 5 seconds for error messages (giving more time to read)
+      setTimeout(() => {
+        notice.hide();
+      }, 5000);
     }
   }
 
@@ -161,11 +175,15 @@ export default class AITaggerPlugin extends Plugin {
     const files = this.app.vault.getMarkdownFiles();
     let processed = 0;
     let successful = 0;
-
-    new Notice(`Starting to tag ${files.length} notes...`);
+    
+    // Create a persistent notice that we'll update
+    const notice = new Notice(`Starting to tag ${files.length} notes...`, 0);
 
     for (const file of files) {
       try {
+        // Update the notice with current file
+        notice.setMessage(`Processing: ${file.path}\nProgress: ${processed}/${files.length} (${successful} successful)`);
+        
         const content = await this.app.vault.read(file);
         const tags = await this.generateTags(content);
         await this.updateNoteFrontmatter(file, tags);
@@ -175,16 +193,15 @@ export default class AITaggerPlugin extends Plugin {
       }
 
       processed++;
-      if (processed % 10 === 0) {
-        new Notice(
-          `Processed ${processed}/${files.length} notes (${successful} successful)`
-        );
-      }
     }
 
-    new Notice(
-      `Completed tagging ${successful}/${files.length} notes successfully`
-    );
+    // Final notice with completion message
+    notice.setMessage(`Completed tagging ${successful}/${files.length} notes successfully`);
+    
+    // Hide the notice after 3 seconds
+    setTimeout(() => {
+      notice.hide();
+    }, 3000);
   }
 
   async generateTags(content: string): Promise<string[]> {
@@ -244,47 +261,25 @@ export default class AITaggerPlugin extends Plugin {
   }
 
   async updateNoteFrontmatter(file: TFile, newTags: string[]): Promise<void> {
-    // Read the file content
-    const content = await this.app.vault.read(file);
+    // Use FileManager.processFrontMatter to atomically update the frontmatter
+    await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+      // Add new tags to existing tags or create new tags field
+      if (!frontmatter.tags) {
+        frontmatter.tags = newTags;
+      } else {
+        // Handle case where tags is a string
+        if (typeof frontmatter.tags === "string") {
+          frontmatter.tags = [frontmatter.tags, ...newTags];
+        }
+        // Handle case where tags is already an array
+        else if (Array.isArray(frontmatter.tags)) {
+          frontmatter.tags = [...frontmatter.tags, ...newTags];
+        }
 
-    let frontmatter: Record<string, unknown> = {};
-    let fileContent = content;
-    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-
-    // If frontmatter exists, parse it
-    if (frontmatterMatch) {
-      try {
-        frontmatter = yaml.load(frontmatterMatch[1]);
-        fileContent = content.replace(/^---\n[\s\S]*?\n---\n/, "");
-      } catch (e) {
-        console.error("Error parsing frontmatter:", e);
-        throw new Error("Could not parse existing frontmatter");
+        // Remove duplicates
+        frontmatter.tags = [...new Set(frontmatter.tags)];
       }
-    }
-
-    // Add new tags to existing tags or create new tags field
-    if (!frontmatter.tags) {
-      frontmatter.tags = newTags;
-    } else {
-      // Handle case where tags is a string
-      if (typeof frontmatter.tags === "string") {
-        frontmatter.tags = [frontmatter.tags, ...newTags];
-      }
-      // Handle case where tags is already an array
-      else if (Array.isArray(frontmatter.tags)) {
-        frontmatter.tags = [...frontmatter.tags, ...newTags];
-      }
-
-      // Remove duplicates
-      frontmatter.tags = [...new Set(frontmatter.tags)];
-    }
-
-    // Convert frontmatter back to YAML
-    const newFrontmatter = yaml.dump(frontmatter);
-    const newContent = `---\n${newFrontmatter}---\n${fileContent}`;
-
-    // Write the updated content back to the file
-    await this.app.vault.modify(file, newContent);
+    });
   }
 }
 
@@ -321,7 +316,7 @@ class ConfirmModal extends Modal {
       buttonContainer.addClass("ai-tagger-modal-buttons");
 
       const settingsButton = buttonContainer.createEl("button", {
-        text: "Open Settings",
+        text: "Open settings",
       });
       settingsButton.addEventListener("click", () => {
         this.close();
@@ -331,7 +326,7 @@ class ConfirmModal extends Modal {
         if ('setting' in this.app) {
           const appWithSetting = this.app as unknown as { setting: { open: () => void; openTabById: (id: string) => void } };
           appWithSetting.setting.open();
-          appWithSetting.setting.openTabById("obsidian-sample-plugin");
+          appWithSetting.setting.openTabById("ai-tagger");
         }
       });
 
@@ -380,10 +375,9 @@ class AITaggerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
 
     containerEl.empty();
-    containerEl.createEl("h2", { text: "AI Tagging Settings" });
 
     new Setting(containerEl)
-      .setName("API Key")
+      .setName("API key")
       .setDesc(
         "Your Anthropic API key. Required to use the AI service. Get it from https://console.anthropic.com/ if you don't have one already. We recommend using a dedicated key for this plugin."
       )
@@ -398,7 +392,7 @@ class AITaggerSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("AI Model")
+      .setName("AI model")
       .setDesc("Choose which AI model to use for tag generation.")
       .addDropdown((dropdown) =>
         dropdown
@@ -414,7 +408,7 @@ class AITaggerSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Maximum Number of Tags")
+      .setName("Maximum number of tags")
       .setDesc("Set the maximum number of tags to generate per note.")
       .addSlider((slider) =>
         slider
@@ -428,7 +422,7 @@ class AITaggerSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Prompt Template")
+      .setName("Prompt template")
       .setDesc(
         "Customize the prompt sent to the AI. Use {maxTags} and {content} as placeholders."
       )
