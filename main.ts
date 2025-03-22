@@ -14,15 +14,25 @@ interface AITaggerSettings {
   apiKey: string;
   modelName: string;
   maxTags: number;
+  promptOption: string;
   promptTemplate: string;
 }
+
+// Define prompt templates
+const PROMPT_TEMPLATES = {
+  standard: "Generate {maxTags} relevant tags for the following note content. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  descriptive: "Analyze the following note content and generate {maxTags} descriptive tags that capture the main topics, concepts, and themes. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  academic: "Review the following academic or research note and generate {maxTags} specific tags that would help categorize this content in an academic context. Include relevant field-specific terminology. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  concise: "Generate {maxTags} short, concise tags for the following note content. Focus on single-word tags when possible. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase.\n\nContent:\n{content}",
+  custom: "",
+};
 
 const DEFAULT_SETTINGS: AITaggerSettings = {
   apiKey: "",
   modelName: "claude-3-5-sonnet-20240620",
   maxTags: 5,
-  promptTemplate:
-    "Generate {maxTags} relevant tags for the following note content. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  promptOption: "standard",
+  promptTemplate: PROMPT_TEMPLATES.standard,
 };
 
 export default class AITaggerPlugin extends Plugin {
@@ -421,19 +431,66 @@ class AITaggerSettingTab extends PluginSettingTab {
           })
       );
 
+    // Prompt option dropdown
     new Setting(containerEl)
-      .setName("Prompt template")
-      .setDesc(
-        "Customize the prompt sent to the AI. Use {maxTags} and {content} as placeholders."
-      )
-      .addTextArea((textarea) =>
-        textarea
-          .setValue(this.plugin.settings.promptTemplate)
+      .setName("Prompt style")
+      .setDesc("Choose a predefined prompt style or create your own custom prompt.")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("standard", "Standard")
+          .addOption("descriptive", "Descriptive")
+          .addOption("academic", "Academic")
+          .addOption("concise", "Concise")
+          .addOption("custom", "Custom")
+          .setValue(this.plugin.settings.promptOption)
           .onChange(async (value) => {
-            this.plugin.settings.promptTemplate = value;
+            this.plugin.settings.promptOption = value;
+            
+            // Update prompt template if not using custom
+            if (value !== "custom") {
+              this.plugin.settings.promptTemplate = PROMPT_TEMPLATES[value as keyof typeof PROMPT_TEMPLATES];
+              
+              // Force refresh to update the textarea with the new template
+              this.display();
+            } else if (this.plugin.settings.promptTemplate === "") {
+              // If switching to custom and no custom template yet, initialize with standard
+              this.plugin.settings.promptTemplate = PROMPT_TEMPLATES.standard;
+              this.display();
+            }
+            
             await this.plugin.saveSettings();
-          })
-      )
-      .setClass("ai-tagger-wide-setting");
+          });
+        return dropdown;
+      });
+
+    // Only show prompt template textarea if custom option is selected
+    if (this.plugin.settings.promptOption === "custom") {
+      new Setting(containerEl)
+        .setName("Custom prompt template")
+        .setDesc(
+          "Customize the prompt sent to the AI. Use {maxTags} and {content} as placeholders."
+        )
+        .addTextArea((textarea) =>
+          textarea
+            .setValue(this.plugin.settings.promptTemplate)
+            .onChange(async (value) => {
+              this.plugin.settings.promptTemplate = value;
+              await this.plugin.saveSettings();
+            })
+        )
+        .setClass("ai-tagger-wide-setting");
+    } else {
+      // Show the current template as read-only if not using custom
+      new Setting(containerEl)
+        .setName("Current prompt template")
+        .setDesc("This is the prompt template that will be used (read-only). Switch to Custom if you want to edit it.")
+        .addTextArea((textarea) => {
+          textarea
+            .setValue(this.plugin.settings.promptTemplate)
+            .setDisabled(true);
+          return textarea;
+        })
+        .setClass("ai-tagger-wide-setting");
+    }
   }
 }

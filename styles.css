@@ -25,6 +25,12 @@ AI Tagger Plugin Styles
   resize: vertical;
 }
 
+/* Styling for disabled textarea */
+.ai-tagger-wide-setting textarea:disabled {
+  opacity: 0.75;
+  background-color: var(--background-secondary);
+}
+
 /* Add a subtle highlight for successfully tagged notes if needed */
 .ai-tagged {
   border-left: 2px solid var(--interactive-accent);
