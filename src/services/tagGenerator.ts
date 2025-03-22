@@ -8,6 +8,31 @@ export async function generateTags(
 ): Promise<string[]> {
   validateSettings(settings);
 
+  const languageNames: Record<string, string> = {
+    ar: "Arabic",
+    cs: "Czech",
+    da: "Danish",
+    de: "German",
+    en: "English",
+    es: "Spanish",
+    fr: "French",
+    id: "Indonesian",
+    it: "Italian",
+    ja: "Japanese",
+    ko: "Korean",
+    nl: "Dutch",
+    no: "Norwegian",
+    pl: "Polish",
+    pt: "Portuguese",
+    "pt-BR": "Brazilian Portuguese",
+    ro: "Romanian",
+    ru: "Russian",
+    tr: "Turkish",
+    uk: "Ukrainian",
+    zh: "Chinese (Simplified)",
+    "zh-TW": "Chinese (Traditional)",
+  };
+
   // Replace placeholders in the prompt template
   const prompt = settings.promptTemplate
     .replace("{maxTags}", settings.maxTags.toString())

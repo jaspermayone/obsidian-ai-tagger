@@ -1,4 +1,5 @@
 import { Notice } from "obsidian";
+import { i18n } from "../i18n";
 
 interface PersistentNoticeOptions {
   duration?: number;

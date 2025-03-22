@@ -74,4 +74,5 @@ export const DEFAULT_SETTINGS: AITaggerSettings = {
   promptOption: "standard",
   promptTemplate: PROMPT_TEMPLATES.standard,
   customEndpoint: "",
+  language: "en",
 };

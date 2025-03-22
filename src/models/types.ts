@@ -8,6 +8,30 @@ export enum AIProvider {
   Custom = "custom",
 }
 
+export type LanguageCode =
+  | "ar" // Arabic
+  | "cs" // Czech
+  | "da" // Danish
+  | "de" // German
+  | "en" // English
+  | "es" // Spanish
+  | "fr" // French
+  | "id" // Indonesian
+  | "it" // Italian
+  | "ja" // Japanese
+  | "ko" // Korean
+  | "nl" // Dutch
+  | "no" // Norwegian
+  | "pl" // Polish
+  | "pt" // Portuguese
+  | "pt-BR" // Brazilian Portuguese
+  | "ro" // Romanian
+  | "ru" // Russian
+  | "tr" // Turkish
+  | "uk" // Ukrainian
+  | "zh" // Chinese (Simplified)
+  | "zh-TW"; // Chinese (Traditional)
+
 export interface AITaggerSettings {
   provider: AIProvider;
   apiKey: string;
@@ -16,6 +40,7 @@ export interface AITaggerSettings {
   promptOption: string;
   promptTemplate: string;
   customEndpoint: string;
+  language: LanguageCode;
 }
 
 export interface ModelInfo {

@@ -1,0 +1,86 @@
+{
+  "settings": {
+    "title": "AI Tagger Settings",
+    "provider": {
+      "title": "AI Provider",
+      "desc": "Select which AI provider to use for generating tags.",
+      "anthropic": "Anthropic (Claude)",
+      "openai": "OpenAI (GPT)",
+      "mistral": "Mistral AI",
+      "google": "Google (Gemini)",
+      "custom": "Custom Endpoint (OpenAI Compatible)"
+    },
+    "customEndpoint": {
+      "title": "Custom API Endpoint",
+      "desc": "Enter the URL for your custom OpenAI-compatible API endpoint.",
+      "placeholder": "https://your-api-endpoint.com/v1/chat/completions"
+    },
+    "apiKey": {
+      "title": "API Key",
+      "desc": "Your {provider} API key. Required to use the AI service.",
+      "getKey": "Get it from {url} if you don't have one already.",
+      "recommendation": "We recommend using a dedicated key for this plugin.",
+      "placeholder": "Enter your API key"
+    },
+    "model": {
+      "title": "AI Model",
+      "desc": "Choose which AI model to use for tag generation.",
+      "custom": "{model} (Custom)"
+    },
+    "maxTags": {
+      "title": "Maximum number of tags",
+      "desc": "Set the maximum number of tags to generate per note."
+    },
+    "promptStyle": {
+      "title": "Prompt Style",
+      "desc": "Choose a predefined prompt style or create your own custom prompt.",
+      "standard": "Standard",
+      "descriptive": "Descriptive",
+      "academic": "Academic",
+      "concise": "Concise",
+      "custom": "Custom"
+    },
+    "customPrompt": {
+      "title": "Custom prompt template",
+      "desc": "Customize the prompt sent to the AI. Use {maxTags} and {content} as placeholders."
+    },
+    "currentPrompt": {
+      "title": "Current prompt template",
+      "desc": "This is the prompt template that will be used (read-only). Switch to Custom if you want to edit it."
+    },
+    "language": {
+      "title": "Language",
+      "desc": "Choose the language for the plugin interface."
+    }
+  },
+  "modals": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "settings": "Open settings",
+    "configError": "AI tagging configuration error",
+    "tagAll": "This will tag all notes in your vault using the {model} model. This may take a while and consume API credits. Do you want to continue?"
+  },
+  "notices": {
+    "noActiveNote": "No active note to tag",
+    "analyzing": "Analyzing note content and generating tags...",
+    "tagSuccess": "Successfully added tags: {tags}",
+    "tagError": "Error tagging note: {error}",
+    "startingBulk": "Starting to tag notes...",
+    "processingNote": "Processing: {file}\nProgress: {processed}/{total} ({successful} successful)",
+    "bulkComplete": "Completed tagging {successful}/{total} notes successfully",
+    "bulkError": "Error during bulk tagging: {error}"
+  },
+  "errors": {
+    "apiKeyMissing": "API key not configured. Please add your API key in the plugin settings.",
+    "endpointMissing": "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings.",
+    "apiError": "Failed to generate tags: {error}",
+    "unknownProvider": "Unknown provider: {provider}"
+  },
+  "commands": {
+    "tagCurrent": "Tag current note with AI",
+    "tagAll": "Tag all notes with AI"
+  },
+  "ribbon": {
+    "tooltip": "Auto-tag with AI"
+  }
+}

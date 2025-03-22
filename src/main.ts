@@ -18,11 +18,16 @@ export default class AITaggerPlugin extends Plugin {
 
   async onload() {
     await this.loadSettings();
+    
+    // Initialize language from settings
+    import('./i18n').then(({ i18n }) => {
+      i18n.setLanguage(this.settings.language);
+    });
 
     // Create an icon in the left ribbon
     const ribbonIconEl = this.addRibbonIcon(
       "tag",
-      "Auto-tag with AI",
+      i18n.t("ribbon.tooltip"),
       this.handleRibbonClick.bind(this)
     );
     ribbonIconEl.addClass("ai-tagger-ribbon-class");
@@ -30,14 +35,14 @@ export default class AITaggerPlugin extends Plugin {
     // Add command to tag current note
     this.addCommand({
       id: "tag-current-note",
-      name: "Tag current note with AI",
+      name: i18n.t("commands.tagCurrent"),
       checkCallback: this.checkAndTagCurrentNote.bind(this),
     });
 
     // Add command to tag all notes
     this.addCommand({
       id: "tag-all-notes",
-      name: "Tag all notes with AI",
+      name: i18n.t("commands.tagAll"),
       callback: this.confirmAndTagAllNotes.bind(this),
     });
 

@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { AIProvider } from "../models/types";
 import { MODEL_CONFIGS, PROMPT_TEMPLATES } from "../models/constants";
 import AITaggerPlugin from "../main";
+import { i18n, languageNames } from "../i18n";
 
 export class AITaggerSettingTab extends PluginSettingTab {
   plugin: AITaggerPlugin;
@@ -15,24 +16,47 @@ export class AITaggerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
+    this.addLanguageSection(containerEl);
     this.addProviderSection(containerEl);
     this.addApiSection(containerEl);
     this.addTaggingOptionsSection(containerEl);
     this.addPromptSection(containerEl);
   }
+  
+  private addLanguageSection(containerEl: HTMLElement): void {
+    new Setting(containerEl)
+      .setName(i18n.t("settings.language.title"))
+      .setDesc(i18n.t("settings.language.desc"))
+      .addDropdown((dropdown) => {
+        // Add all supported languages
+        Object.entries(languageNames).forEach(([code, name]) => {
+          dropdown.addOption(code, name);
+        });
+        
+        dropdown
+          .setValue(this.plugin.settings.language)
+          .onChange(async (value) => {
+            this.plugin.settings.language = value;
+            i18n.setLanguage(value);
+            await this.plugin.saveSettings();
+            this.display(); // Refresh the UI with the new language
+          });
+        return dropdown;
+      });
+  }
 
   private addProviderSection(containerEl: HTMLElement): void {
     // AI Provider selection
     new Setting(containerEl)
-      .setName("AI Provider")
-      .setDesc("Select which AI provider to use for generating tags.")
+      .setName(i18n.t("settings.provider.title"))
+      .setDesc(i18n.t("settings.provider.desc"))
       .addDropdown((dropdown) => {
         dropdown
-          .addOption(AIProvider.Anthropic, "Anthropic (Claude)")
-          .addOption(AIProvider.OpenAI, "OpenAI (GPT)")
-          .addOption(AIProvider.Mistral, "Mistral AI")
-          .addOption(AIProvider.Google, "Google (Gemini)")
-          .addOption(AIProvider.Custom, "Custom Endpoint (OpenAI Compatible)")
+          .addOption(AIProvider.Anthropic, i18n.t("settings.provider.anthropic"))
+          .addOption(AIProvider.OpenAI, i18n.t("settings.provider.openai"))
+          .addOption(AIProvider.Mistral, i18n.t("settings.provider.mistral"))
+          .addOption(AIProvider.Google, i18n.t("settings.provider.google"))
+          .addOption(AIProvider.Custom, i18n.t("settings.provider.custom"))
           .setValue(this.plugin.settings.provider)
           .onChange(async (value) => {
             const newProvider = value as AIProvider;
@@ -53,13 +77,11 @@ export class AITaggerSettingTab extends PluginSettingTab {
     // Custom endpoint setting (only shown for custom provider)
     if (this.plugin.settings.provider === AIProvider.Custom) {
       new Setting(containerEl)
-        .setName("Custom API Endpoint")
-        .setDesc(
-          "Enter the URL for your custom OpenAI-compatible API endpoint."
-        )
+        .setName(i18n.t("settings.customEndpoint.title"))
+        .setDesc(i18n.t("settings.customEndpoint.desc"))
         .addText((text) =>
           text
-            .setPlaceholder("https://your-api-endpoint.com/v1/chat/completions")
+            .setPlaceholder(i18n.t("settings.customEndpoint.placeholder"))
             .setValue(this.plugin.settings.customEndpoint)
             .onChange(async (value) => {
               this.plugin.settings.customEndpoint = value;
@@ -74,22 +96,22 @@ export class AITaggerSettingTab extends PluginSettingTab {
     const providerConfig = MODEL_CONFIGS[this.plugin.settings.provider];
 
     // API Key with provider-specific description
+    const providerName = this.plugin.settings.provider === AIProvider.Custom 
+      ? "" 
+      : this.plugin.settings.provider;
+      
     new Setting(containerEl)
-      .setName("API key")
+      .setName(i18n.t("settings.apiKey.title"))
       .setDesc(
-        `Your ${
-          this.plugin.settings.provider === AIProvider.Custom
-            ? ""
-            : this.plugin.settings.provider
-        } API key. Required to use the AI service. ${
-          providerConfig.apiKeyUrl
-            ? `Get it from ${providerConfig.apiKeyUrl} if you don't have one already.`
-            : ""
-        } We recommend using a dedicated key for this plugin.`
+        i18n.t("settings.apiKey.desc", { provider: providerName }) + " " +
+        (providerConfig.apiKeyUrl
+          ? i18n.t("settings.apiKey.getKey", { url: providerConfig.apiKeyUrl })
+          : "") + " " +
+        i18n.t("settings.apiKey.recommendation")
       )
       .addText((text) =>
         text
-          .setPlaceholder("Enter your API key")
+          .setPlaceholder(i18n.t("settings.apiKey.placeholder"))
           .setValue(this.plugin.settings.apiKey)
           .onChange(async (value) => {
             this.plugin.settings.apiKey = value;
@@ -99,8 +121,8 @@ export class AITaggerSettingTab extends PluginSettingTab {
 
     // AI model selection (provider-specific)
     new Setting(containerEl)
-      .setName("AI model")
-      .setDesc("Choose which AI model to use for tag generation.")
+      .setName(i18n.t("settings.model.title"))
+      .setDesc(i18n.t("settings.model.desc"))
       .addDropdown((dropdown) => {
         // Add models for the selected provider
         providerConfig.models.forEach((model) => {
@@ -115,7 +137,7 @@ export class AITaggerSettingTab extends PluginSettingTab {
         ) {
           dropdown.addOption(
             this.plugin.settings.modelName,
-            this.plugin.settings.modelName + " (Custom)"
+            i18n.t("settings.model.custom", { model: this.plugin.settings.modelName })
           );
         }
 
@@ -132,8 +154,8 @@ export class AITaggerSettingTab extends PluginSettingTab {
 
   private addTaggingOptionsSection(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Maximum number of tags")
-      .setDesc("Set the maximum number of tags to generate per note.")
+      .setName(i18n.t("settings.maxTags.title"))
+      .setDesc(i18n.t("settings.maxTags.desc"))
       .addSlider((slider) =>
         slider
           .setLimits(1, 20, 1)
@@ -149,17 +171,15 @@ export class AITaggerSettingTab extends PluginSettingTab {
   private addPromptSection(containerEl: HTMLElement): void {
     // Prompt option dropdown
     new Setting(containerEl)
-      .setName("Prompt style")
-      .setDesc(
-        "Choose a predefined prompt style or create your own custom prompt."
-      )
+      .setName(i18n.t("settings.promptStyle.title"))
+      .setDesc(i18n.t("settings.promptStyle.desc"))
       .addDropdown((dropdown) => {
         dropdown
-          .addOption("standard", "Standard")
-          .addOption("descriptive", "Descriptive")
-          .addOption("academic", "Academic")
-          .addOption("concise", "Concise")
-          .addOption("custom", "Custom")
+          .addOption("standard", i18n.t("settings.promptStyle.standard"))
+          .addOption("descriptive", i18n.t("settings.promptStyle.descriptive"))
+          .addOption("academic", i18n.t("settings.promptStyle.academic"))
+          .addOption("concise", i18n.t("settings.promptStyle.concise"))
+          .addOption("custom", i18n.t("settings.promptStyle.custom"))
           .setValue(this.plugin.settings.promptOption)
           .onChange(async (value) => {
             this.plugin.settings.promptOption = value;
@@ -185,10 +205,8 @@ export class AITaggerSettingTab extends PluginSettingTab {
     // Only show prompt template textarea if custom option is selected
     if (this.plugin.settings.promptOption === "custom") {
       new Setting(containerEl)
-        .setName("Custom prompt template")
-        .setDesc(
-          "Customize the prompt sent to the AI. Use {maxTags} and {content} as placeholders."
-        )
+        .setName(i18n.t("settings.customPrompt.title"))
+        .setDesc(i18n.t("settings.customPrompt.desc"))
         .addTextArea((textarea) =>
           textarea
             .setValue(this.plugin.settings.promptTemplate)
@@ -201,10 +219,8 @@ export class AITaggerSettingTab extends PluginSettingTab {
     } else {
       // Show the current template as read-only if not using custom
       new Setting(containerEl)
-        .setName("Current prompt template")
-        .setDesc(
-          "This is the prompt template that will be used (read-only). Switch to Custom if you want to edit it."
-        )
+        .setName(i18n.t("settings.currentPrompt.title"))
+        .setDesc(i18n.t("settings.currentPrompt.desc"))
         .addTextArea((textarea) => {
           textarea
             .setValue(this.plugin.settings.promptTemplate)

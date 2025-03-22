@@ -1,4 +1,5 @@
 import { App, Modal } from "obsidian";
+import { i18n } from "../i18n";
 
 export class ConfirmModal extends Modal {
   private onConfirmCallback: () => void;
@@ -33,7 +34,7 @@ export class ConfirmModal extends Modal {
       buttonContainer.addClass("ai-tagger-modal-buttons");
 
       const settingsButton = buttonContainer.createEl("button", {
-        text: "Open settings",
+        text: i18n.t("modals.settings"),
       });
       settingsButton.addEventListener("click", () => {
         this.close();
@@ -50,7 +51,7 @@ export class ConfirmModal extends Modal {
       });
 
       const cancelButton = buttonContainer.createEl("button", {
-        text: "Cancel",
+        text: i18n.t("modals.cancel"),
       });
       cancelButton.addEventListener("click", () => {
         this.close();
@@ -60,7 +61,7 @@ export class ConfirmModal extends Modal {
       buttonContainer.addClass("ai-tagger-modal-buttons");
 
       const confirmButton = buttonContainer.createEl("button", {
-        text: "Confirm",
+        text: i18n.t("modals.confirm"),
       });
       confirmButton.addEventListener("click", () => {
         this.onConfirmCallback();
@@ -68,7 +69,7 @@ export class ConfirmModal extends Modal {
       });
 
       const cancelButton = buttonContainer.createEl("button", {
-        text: "Cancel",
+        text: i18n.t("modals.cancel"),
       });
       cancelButton.addEventListener("click", () => {
         this.close();

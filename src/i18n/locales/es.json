@@ -1,0 +1,86 @@
+{
+  "settings": {
+    "title": "Configuración de AI Tagger",
+    "provider": {
+      "title": "Proveedor de IA",
+      "desc": "Seleccione qué proveedor de IA usar para generar etiquetas.",
+      "anthropic": "Anthropic (Claude)",
+      "openai": "OpenAI (GPT)",
+      "mistral": "Mistral AI",
+      "google": "Google (Gemini)",
+      "custom": "Endpoint personalizado (Compatible con OpenAI)"
+    },
+    "customEndpoint": {
+      "title": "Endpoint API Personalizado",
+      "desc": "Ingrese la URL para su endpoint API compatible con OpenAI.",
+      "placeholder": "https://your-api-endpoint.com/v1/chat/completions"
+    },
+    "apiKey": {
+      "title": "Clave API",
+      "desc": "Su clave API de {provider}. Necesaria para usar el servicio de IA.",
+      "getKey": "Obténgala desde {url} si aún no tiene una.",
+      "recommendation": "Recomendamos usar una clave dedicada para este plugin.",
+      "placeholder": "Ingrese su clave API"
+    },
+    "model": {
+      "title": "Modelo de IA",
+      "desc": "Elija qué modelo de IA usar para generar etiquetas.",
+      "custom": "{model} (Personalizado)"
+    },
+    "maxTags": {
+      "title": "Número máximo de etiquetas",
+      "desc": "Establezca el número máximo de etiquetas a generar por nota."
+    },
+    "promptStyle": {
+      "title": "Estilo de prompt",
+      "desc": "Elija un estilo de prompt predefinido o cree su propio prompt personalizado.",
+      "standard": "Estándar",
+      "descriptive": "Descriptivo",
+      "academic": "Académico",
+      "concise": "Conciso",
+      "custom": "Personalizado"
+    },
+    "customPrompt": {
+      "title": "Plantilla de prompt personalizada",
+      "desc": "Personalice el prompt enviado a la IA. Use {maxTags} y {content} como marcadores de posición."
+    },
+    "currentPrompt": {
+      "title": "Plantilla de prompt actual",
+      "desc": "Esta es la plantilla de prompt que se utilizará (solo lectura). Cambie a Personalizado si desea editarla."
+    },
+    "language": {
+      "title": "Idioma",
+      "desc": "Elija el idioma para la interfaz del plugin."
+    }
+  },
+  "modals": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "settings": "Abrir configuración",
+    "configError": "Error de configuración de etiquetado IA",
+    "tagAll": "Esto etiquetará todas las notas en su bóveda usando el modelo {model}. Esto puede llevar tiempo y consumir créditos de API. ¿Desea continuar?"
+  },
+  "notices": {
+    "noActiveNote": "No hay nota activa para etiquetar",
+    "analyzing": "Analizando contenido de la nota y generando etiquetas...",
+    "tagSuccess": "Etiquetas añadidas con éxito: {tags}",
+    "tagError": "Error al etiquetar nota: {error}",
+    "startingBulk": "Comenzando a etiquetar notas...",
+    "processingNote": "Procesando: {file}\nProgreso: {processed}/{total} ({successful} exitosas)",
+    "bulkComplete": "Etiquetado completado: {successful}/{total} notas con éxito",
+    "bulkError": "Error durante el etiquetado masivo: {error}"
+  },
+  "errors": {
+    "apiKeyMissing": "Clave API no configurada. Por favor, añada su clave API en la configuración del plugin.",
+    "endpointMissing": "Endpoint API personalizado no configurado. Por favor, añada su URL de endpoint en la configuración del plugin.",
+    "apiError": "Error al generar etiquetas: {error}",
+    "unknownProvider": "Proveedor desconocido: {provider}"
+  },
+  "commands": {
+    "tagCurrent": "Etiquetar nota actual con IA",
+    "tagAll": "Etiquetar todas las notas con IA"
+  },
+  "ribbon": {
+    "tooltip": "Auto-etiquetar con IA"
+  }
+}
