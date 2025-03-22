@@ -10,7 +10,15 @@ import {
   requestUrl,
 } from "obsidian";
 
-type AIProvider = 'anthropic' | 'openai' | 'mistral' | 'google' | 'custom';
+// type AIProvider = 'Anthropic' | 'OpenAI' | 'Mistral' | 'Google' | 'Custom';
+
+enum AIProvider {
+  Anthropic = "anthropic",
+  OpenAI = "openai",
+  Mistral = "mistral",
+  Google = "google",
+  Custom = "custom",
+}
 
 interface AITaggerSettings {
   provider: AIProvider;
@@ -24,10 +32,14 @@ interface AITaggerSettings {
 
 // Define prompt templates
 const PROMPT_TEMPLATES = {
-  standard: "Generate {maxTags} relevant tags for the following note content. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
-  descriptive: "Analyze the following note content and generate {maxTags} descriptive tags that capture the main topics, concepts, and themes. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
-  academic: "Review the following academic or research note and generate {maxTags} specific tags that would help categorize this content in an academic context. Include relevant field-specific terminology. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
-  concise: "Generate {maxTags} short, concise tags for the following note content. Focus on single-word tags when possible. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase.\n\nContent:\n{content}",
+  standard:
+    "Generate {maxTags} relevant tags for the following note content. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  descriptive:
+    "Analyze the following note content and generate {maxTags} descriptive tags that capture the main topics, concepts, and themes. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  academic:
+    "Review the following academic or research note and generate {maxTags} specific tags that would help categorize this content in an academic context. Include relevant field-specific terminology. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase and use hyphens for multi-word tags.\n\nContent:\n{content}",
+  concise:
+    "Generate {maxTags} short, concise tags for the following note content. Focus on single-word tags when possible. Return only the tags as a comma-separated list, without any additional commentary. Tags should be lowercase.\n\nContent:\n{content}",
   custom: "",
 };
 
@@ -78,18 +90,16 @@ const MODEL_CONFIGS = {
   },
   custom: {
     apiUrl: "",
-    models: [
-      { id: "custom-model", name: "Custom Model" },
-    ],
+    models: [{ id: "custom-model", name: "Custom Model" }],
     defaultModel: "custom-model",
     apiKeyUrl: "",
-  }
+  },
 };
 
 const DEFAULT_SETTINGS: AITaggerSettings = {
-  provider: "anthropic",
+  provider: AIProvider.Anthropic,
   apiKey: "",
-  modelName: MODEL_CONFIGS.anthropic.defaultModel,
+  modelName: MODEL_CONFIGS[AIProvider.Anthropic].defaultModel,
   maxTags: 5,
   promptOption: "standard",
   promptTemplate: PROMPT_TEMPLATES.standard,
@@ -118,8 +128,11 @@ export default class AITaggerPlugin extends Plugin {
           ).open();
           return;
         }
-        
-        if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+
+        if (
+          this.settings.provider === AIProvider.Custom &&
+          !this.settings.customEndpoint
+        ) {
           new ConfirmModal(
             this.app,
             "Custom API endpoint missing",
@@ -129,7 +142,7 @@ export default class AITaggerPlugin extends Plugin {
           ).open();
           return;
         }
-        
+
         // Tag the current note directly when clicking the ribbon icon
         this.tagCurrentNote();
       }
@@ -155,8 +168,11 @@ export default class AITaggerPlugin extends Plugin {
               ).open();
               return true;
             }
-            
-            if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+
+            if (
+              this.settings.provider === AIProvider.Custom &&
+              !this.settings.customEndpoint
+            ) {
               new ConfirmModal(
                 this.app,
                 "Custom API endpoint missing",
@@ -166,7 +182,7 @@ export default class AITaggerPlugin extends Plugin {
               ).open();
               return true;
             }
-            
+
             this.tagCurrentNote();
           }
           return true;
@@ -190,8 +206,11 @@ export default class AITaggerPlugin extends Plugin {
           ).open();
           return;
         }
-        
-        if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+
+        if (
+          this.settings.provider === "custom" &&
+          !this.settings.customEndpoint
+        ) {
           new ConfirmModal(
             this.app,
             "Custom API endpoint missing",
@@ -204,7 +223,11 @@ export default class AITaggerPlugin extends Plugin {
 
         new ConfirmModal(
           this.app,
-          `This will tag all notes in your vault using the ${MODEL_CONFIGS[this.settings.provider].models.find(m => m.id === this.settings.modelName)?.name || this.settings.modelName} model. This may take a while and consume API credits. Do you want to continue?`,
+          `This will tag all notes in your vault using the ${
+            MODEL_CONFIGS[this.settings.provider].models.find(
+              (m) => m.id === this.settings.modelName
+            )?.name || this.settings.modelName
+          } model. This may take a while and consume API credits. Do you want to continue?`,
           () => this.tagAllNotes()
         ).open();
       },
@@ -233,8 +256,8 @@ export default class AITaggerPlugin extends Plugin {
       );
       return;
     }
-    
-    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+
+    if (this.settings.provider === AIProvider.Custom && !this.settings.customEndpoint) {
       new Notice(
         "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
       );
@@ -251,26 +274,30 @@ export default class AITaggerPlugin extends Plugin {
     const content = await this.app.vault.read(file);
 
     // Create a persistent notice
-    const notice = new Notice("Analyzing note content and generating tags...", 0);
+    const notice = new Notice(
+      "Analyzing note content and generating tags...",
+      0
+    );
 
     try {
       const tags = await this.generateTags(content);
       await this.updateNoteFrontmatter(file, tags);
-      
+
       // Update the notice with success message
       notice.setMessage(`Successfully added tags: ${tags.join(", ")}`);
-      
+
       // Hide after 3 seconds
       setTimeout(() => {
         notice.hide();
       }, 3000);
     } catch (error) {
       console.error("Error tagging note:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       // Update the notice with error message
       notice.setMessage(`Error tagging note: ${errorMessage}`);
-      
+
       // Hide after 5 seconds for error messages (giving more time to read)
       setTimeout(() => {
         notice.hide();
@@ -285,8 +312,8 @@ export default class AITaggerPlugin extends Plugin {
       );
       return;
     }
-    
-    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+
+    if (this.settings.provider === AIProvider.Custom && !this.settings.customEndpoint) {
       new Notice(
         "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
       );
@@ -296,15 +323,17 @@ export default class AITaggerPlugin extends Plugin {
     const files = this.app.vault.getMarkdownFiles();
     let processed = 0;
     let successful = 0;
-    
+
     // Create a persistent notice that we'll update
     const notice = new Notice(`Starting to tag ${files.length} notes...`, 0);
 
     for (const file of files) {
       try {
         // Update the notice with current file
-        notice.setMessage(`Processing: ${file.path}\nProgress: ${processed}/${files.length} (${successful} successful)`);
-        
+        notice.setMessage(
+          `Processing: ${file.path}\nProgress: ${processed}/${files.length} (${successful} successful)`
+        );
+
         const content = await this.app.vault.read(file);
         const tags = await this.generateTags(content);
         await this.updateNoteFrontmatter(file, tags);
@@ -317,8 +346,10 @@ export default class AITaggerPlugin extends Plugin {
     }
 
     // Final notice with completion message
-    notice.setMessage(`Completed tagging ${successful}/${files.length} notes successfully`);
-    
+    notice.setMessage(
+      `Completed tagging ${successful}/${files.length} notes successfully`
+    );
+
     // Hide the notice after 3 seconds
     setTimeout(() => {
       notice.hide();
@@ -332,7 +363,7 @@ export default class AITaggerPlugin extends Plugin {
       );
     }
 
-    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+    if (this.settings.provider === AIProvider.Custom && !this.settings.customEndpoint) {
       throw new Error(
         "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
       );
@@ -346,12 +377,12 @@ export default class AITaggerPlugin extends Plugin {
     try {
       let response;
       let tagText: string;
-      
+
       // Get provider configuration
       const providerConfig = MODEL_CONFIGS[this.settings.provider];
-      
+
       switch (this.settings.provider) {
-        case "anthropic":
+        case AIProvider.Anthropic:
           response = await requestUrl({
             url: providerConfig.apiUrl,
             method: "POST",
@@ -371,7 +402,7 @@ export default class AITaggerPlugin extends Plugin {
               ],
             }),
           });
-          
+
           if (response.status !== 200) {
             throw new Error(
               `API returned status code ${response.status}: ${JSON.stringify(
@@ -379,25 +410,26 @@ export default class AITaggerPlugin extends Plugin {
               )}`
             );
           }
-          
+
           tagText = response.json.content[0].text;
           break;
-          
-        case "openai":
-        case "mistral":
-        case "custom":
+
+        case AIProvider.OpenAI:
+        case AIProvider.Mistral:
+        case AIProvider.Custom:
           // OpenAI and Mistral use the same API format
           // For custom endpoints, we assume OpenAI compatible format
-          const endpoint = this.settings.provider === "custom" 
-            ? this.settings.customEndpoint 
-            : providerConfig.apiUrl;
-            
+          const endpoint =
+            this.settings.provider === AIProvider.Custom
+              ? this.settings.customEndpoint
+              : providerConfig.apiUrl;
+
           response = await requestUrl({
             url: endpoint,
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${this.settings.apiKey}`,
+              Authorization: `Bearer ${this.settings.apiKey}`,
             },
             body: JSON.stringify({
               model: this.settings.modelName,
@@ -411,7 +443,7 @@ export default class AITaggerPlugin extends Plugin {
               temperature: 0.3,
             }),
           });
-          
+
           if (response.status !== 200) {
             throw new Error(
               `API returned status code ${response.status}: ${JSON.stringify(
@@ -419,14 +451,14 @@ export default class AITaggerPlugin extends Plugin {
               )}`
             );
           }
-          
+
           tagText = response.json.choices[0].message.content;
           break;
-          
-        case "google":
+
+        case AIProvider.Google:
           // Google Gemini has a different API format
           const apiEndpoint = `${providerConfig.apiUrl}${this.settings.modelName}:generateContent?key=${this.settings.apiKey}`;
-          
+
           response = await requestUrl({
             url: apiEndpoint,
             method: "POST",
@@ -446,7 +478,7 @@ export default class AITaggerPlugin extends Plugin {
               },
             }),
           });
-          
+
           if (response.status !== 200) {
             throw new Error(
               `API returned status code ${response.status}: ${JSON.stringify(
@@ -454,10 +486,10 @@ export default class AITaggerPlugin extends Plugin {
               )}`
             );
           }
-          
+
           tagText = response.json.candidates[0].content.parts[0].text;
           break;
-          
+
         default:
           throw new Error(`Unknown provider: ${this.settings.provider}`);
       }
@@ -469,7 +501,8 @@ export default class AITaggerPlugin extends Plugin {
         .filter((tag: string) => tag.length > 0);
     } catch (error) {
       console.error(`Error calling ${this.settings.provider} API:`, error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to generate tags: ${errorMessage}`);
     }
   }
@@ -537,8 +570,10 @@ class ConfirmModal extends Modal {
         // Open settings tab
         // Using type assertion with a more specific interface would be better
         // if we had access to the internal Obsidian API types
-        if ('setting' in this.app) {
-          const appWithSetting = this.app as unknown as { setting: { open: () => void; openTabById: (id: string) => void } };
+        if ("setting" in this.app) {
+          const appWithSetting = this.app as unknown as {
+            setting: { open: () => void; openTabById: (id: string) => void };
+          };
           appWithSetting.setting.open();
           appWithSetting.setting.openTabById("ai-tagger");
         }
@@ -596,21 +631,22 @@ class AITaggerSettingTab extends PluginSettingTab {
       .setDesc("Select which AI provider to use for generating tags.")
       .addDropdown((dropdown) => {
         dropdown
-          .addOption("anthropic", "Anthropic (Claude)")
-          .addOption("openai", "OpenAI (GPT)")
-          .addOption("mistral", "Mistral AI")
-          .addOption("google", "Google (Gemini)")
-          .addOption("custom", "Custom Endpoint (OpenAI Compatible)")
+          .addOption(AIProvider.Anthropic, "Anthropic (Claude)")
+          .addOption(AIProvider.OpenAI, "OpenAI (GPT)")
+          .addOption(AIProvider.Mistral, "Mistral AI")
+          .addOption(AIProvider.Google, "Google (Gemini)")
+          .addOption(AIProvider.Custom, "Custom Endpoint (OpenAI Compatible)")
           .setValue(this.plugin.settings.provider)
           .onChange(async (value) => {
             const newProvider = value as AIProvider;
             this.plugin.settings.provider = newProvider;
-            
+
             // Update model to default for the selected provider
-            if (newProvider !== "custom") {
-              this.plugin.settings.modelName = MODEL_CONFIGS[newProvider].defaultModel;
+            if (newProvider !== AIProvider.Custom) {
+              this.plugin.settings.modelName =
+                MODEL_CONFIGS[newProvider].defaultModel;
             }
-            
+
             await this.plugin.saveSettings();
             this.display(); // Refresh to show provider-specific options
           });
@@ -618,10 +654,12 @@ class AITaggerSettingTab extends PluginSettingTab {
       });
 
     // Custom endpoint setting (only shown for custom provider)
-    if (this.plugin.settings.provider === "custom") {
+    if (this.plugin.settings.provider === AIProvider.Custom) {
       new Setting(containerEl)
         .setName("Custom API Endpoint")
-        .setDesc("Enter the URL for your custom OpenAI-compatible API endpoint.")
+        .setDesc(
+          "Enter the URL for your custom OpenAI-compatible API endpoint."
+        )
         .addText((text) =>
           text
             .setPlaceholder("https://your-api-endpoint.com/v1/chat/completions")
@@ -635,13 +673,19 @@ class AITaggerSettingTab extends PluginSettingTab {
 
     // Get the current provider config
     const providerConfig = MODEL_CONFIGS[this.plugin.settings.provider];
-    
+
     // API Key with provider-specific description
     new Setting(containerEl)
       .setName("API key")
       .setDesc(
-        `Your ${this.plugin.settings.provider === "custom" ? "" : this.plugin.settings.provider} API key. Required to use the AI service. ${
-          providerConfig.apiKeyUrl ? `Get it from ${providerConfig.apiKeyUrl} if you don't have one already.` : ""
+        `Your ${
+          this.plugin.settings.provider === AIProvider.Custom
+            ? ""
+            : this.plugin.settings.provider
+        } API key. Required to use the AI service. ${
+          providerConfig.apiKeyUrl
+            ? `Get it from ${providerConfig.apiKeyUrl} if you don't have one already.`
+            : ""
         } We recommend using a dedicated key for this plugin.`
       )
       .addText((text) =>
@@ -660,21 +704,29 @@ class AITaggerSettingTab extends PluginSettingTab {
       .setDesc("Choose which AI model to use for tag generation.")
       .addDropdown((dropdown) => {
         // Add models for the selected provider
-        providerConfig.models.forEach(model => {
+        providerConfig.models.forEach((model) => {
           dropdown.addOption(model.id, model.name);
         });
-        
+
         // If current model isn't in the list, add it
-        if (!providerConfig.models.some(m => m.id === this.plugin.settings.modelName)) {
-          dropdown.addOption(this.plugin.settings.modelName, this.plugin.settings.modelName + " (Custom)");
+        if (
+          !providerConfig.models.some(
+            (m) => m.id === this.plugin.settings.modelName
+          )
+        ) {
+          dropdown.addOption(
+            this.plugin.settings.modelName,
+            this.plugin.settings.modelName + " (Custom)"
+          );
         }
-        
-        dropdown.setValue(this.plugin.settings.modelName)
+
+        dropdown
+          .setValue(this.plugin.settings.modelName)
           .onChange(async (value) => {
             this.plugin.settings.modelName = value;
             await this.plugin.saveSettings();
           });
-        
+
         return dropdown;
       });
 
@@ -695,7 +747,9 @@ class AITaggerSettingTab extends PluginSettingTab {
     // Prompt option dropdown
     new Setting(containerEl)
       .setName("Prompt style")
-      .setDesc("Choose a predefined prompt style or create your own custom prompt.")
+      .setDesc(
+        "Choose a predefined prompt style or create your own custom prompt."
+      )
       .addDropdown((dropdown) => {
         dropdown
           .addOption("standard", "Standard")
@@ -706,11 +760,12 @@ class AITaggerSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.promptOption)
           .onChange(async (value) => {
             this.plugin.settings.promptOption = value;
-            
+
             // Update prompt template if not using custom
             if (value !== "custom") {
-              this.plugin.settings.promptTemplate = PROMPT_TEMPLATES[value as keyof typeof PROMPT_TEMPLATES];
-              
+              this.plugin.settings.promptTemplate =
+                PROMPT_TEMPLATES[value as keyof typeof PROMPT_TEMPLATES];
+
               // Force refresh to update the textarea with the new template
               this.display();
             } else if (this.plugin.settings.promptTemplate === "") {
@@ -718,7 +773,7 @@ class AITaggerSettingTab extends PluginSettingTab {
               this.plugin.settings.promptTemplate = PROMPT_TEMPLATES.standard;
               this.display();
             }
-            
+
             await this.plugin.saveSettings();
           });
         return dropdown;
@@ -744,7 +799,9 @@ class AITaggerSettingTab extends PluginSettingTab {
       // Show the current template as read-only if not using custom
       new Setting(containerEl)
         .setName("Current prompt template")
-        .setDesc("This is the prompt template that will be used (read-only). Switch to Custom if you want to edit it.")
+        .setDesc(
+          "This is the prompt template that will be used (read-only). Switch to Custom if you want to edit it."
+        )
         .addTextArea((textarea) => {
           textarea
             .setValue(this.plugin.settings.promptTemplate)
