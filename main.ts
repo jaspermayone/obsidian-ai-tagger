@@ -10,12 +10,16 @@ import {
   requestUrl,
 } from "obsidian";
 
+type AIProvider = 'anthropic' | 'openai' | 'mistral' | 'google' | 'custom';
+
 interface AITaggerSettings {
+  provider: AIProvider;
   apiKey: string;
   modelName: string;
   maxTags: number;
   promptOption: string;
   promptTemplate: string;
+  customEndpoint: string;
 }
 
 // Define prompt templates
@@ -27,12 +31,69 @@ const PROMPT_TEMPLATES = {
   custom: "",
 };
 
+// Define model configurations for each provider
+const MODEL_CONFIGS = {
+  anthropic: {
+    apiUrl: "https://api.anthropic.com/v1/messages",
+    models: [
+      { id: "claude-3-5-sonnet-20240620", name: "Claude 3.5 Sonnet" },
+      { id: "claude-3-opus-20240229", name: "Claude 3 Opus" },
+      { id: "claude-3-sonnet-20240229", name: "Claude 3 Sonnet" },
+      { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku" },
+    ],
+    defaultModel: "claude-3-5-sonnet-20240620",
+    apiKeyUrl: "https://console.anthropic.com/",
+  },
+  openai: {
+    apiUrl: "https://api.openai.com/v1/chat/completions",
+    models: [
+      { id: "gpt-4o", name: "GPT-4o" },
+      { id: "gpt-4-turbo", name: "GPT-4 Turbo" },
+      { id: "gpt-4", name: "GPT-4" },
+      { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo" },
+    ],
+    defaultModel: "gpt-3.5-turbo",
+    apiKeyUrl: "https://platform.openai.com/api-keys",
+  },
+  mistral: {
+    apiUrl: "https://api.mistral.ai/v1/chat/completions",
+    models: [
+      { id: "mistral-large-latest", name: "Mistral Large" },
+      { id: "mistral-medium-latest", name: "Mistral Medium" },
+      { id: "mistral-small-latest", name: "Mistral Small" },
+      { id: "open-mistral-7b", name: "Open Mistral 7B" },
+    ],
+    defaultModel: "mistral-small-latest",
+    apiKeyUrl: "https://console.mistral.ai/api-keys/",
+  },
+  google: {
+    apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/",
+    models: [
+      { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+      { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+      { id: "gemini-1.0-pro", name: "Gemini 1.0 Pro" },
+    ],
+    defaultModel: "gemini-1.5-flash",
+    apiKeyUrl: "https://aistudio.google.com/app/apikey",
+  },
+  custom: {
+    apiUrl: "",
+    models: [
+      { id: "custom-model", name: "Custom Model" },
+    ],
+    defaultModel: "custom-model",
+    apiKeyUrl: "",
+  }
+};
+
 const DEFAULT_SETTINGS: AITaggerSettings = {
+  provider: "anthropic",
   apiKey: "",
-  modelName: "claude-3-5-sonnet-20240620",
+  modelName: MODEL_CONFIGS.anthropic.defaultModel,
   maxTags: 5,
   promptOption: "standard",
   promptTemplate: PROMPT_TEMPLATES.standard,
+  customEndpoint: "",
 };
 
 export default class AITaggerPlugin extends Plugin {
@@ -46,6 +107,7 @@ export default class AITaggerPlugin extends Plugin {
       "tag",
       "Auto-tag with AI",
       (evt: MouseEvent) => {
+        // Check for required settings based on provider
         if (!this.settings.apiKey) {
           new ConfirmModal(
             this.app,
@@ -56,6 +118,18 @@ export default class AITaggerPlugin extends Plugin {
           ).open();
           return;
         }
+        
+        if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+          new ConfirmModal(
+            this.app,
+            "Custom API endpoint missing",
+            () => {},
+            true,
+            "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
+          ).open();
+          return;
+        }
+        
         // Tag the current note directly when clicking the ribbon icon
         this.tagCurrentNote();
       }
@@ -81,6 +155,18 @@ export default class AITaggerPlugin extends Plugin {
               ).open();
               return true;
             }
+            
+            if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+              new ConfirmModal(
+                this.app,
+                "Custom API endpoint missing",
+                () => {},
+                true,
+                "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
+              ).open();
+              return true;
+            }
+            
             this.tagCurrentNote();
           }
           return true;
@@ -104,10 +190,21 @@ export default class AITaggerPlugin extends Plugin {
           ).open();
           return;
         }
+        
+        if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+          new ConfirmModal(
+            this.app,
+            "Custom API endpoint missing",
+            () => {},
+            true,
+            "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
+          ).open();
+          return;
+        }
 
         new ConfirmModal(
           this.app,
-          "This will tag all notes in your vault. This may take a while and consume API credits. Do you want to continue?",
+          `This will tag all notes in your vault using the ${MODEL_CONFIGS[this.settings.provider].models.find(m => m.id === this.settings.modelName)?.name || this.settings.modelName} model. This may take a while and consume API credits. Do you want to continue?`,
           () => this.tagAllNotes()
         ).open();
       },
@@ -133,6 +230,13 @@ export default class AITaggerPlugin extends Plugin {
     if (!this.settings.apiKey) {
       new Notice(
         "API key not configured. Please add your API key in the plugin settings."
+      );
+      return;
+    }
+    
+    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+      new Notice(
+        "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
       );
       return;
     }
@@ -181,6 +285,13 @@ export default class AITaggerPlugin extends Plugin {
       );
       return;
     }
+    
+    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+      new Notice(
+        "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
+      );
+      return;
+    }
 
     const files = this.app.vault.getMarkdownFiles();
     let processed = 0;
@@ -221,42 +332,135 @@ export default class AITaggerPlugin extends Plugin {
       );
     }
 
+    if (this.settings.provider === "custom" && !this.settings.customEndpoint) {
+      throw new Error(
+        "Custom API endpoint not configured. Please add your endpoint URL in the plugin settings."
+      );
+    }
+
     // Replace placeholders in the prompt template
     const prompt = this.settings.promptTemplate
       .replace("{maxTags}", this.settings.maxTags.toString())
       .replace("{content}", content);
 
     try {
-      const response = await requestUrl({
-        url: "https://api.anthropic.com/v1/messages",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": this.settings.apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: this.settings.modelName,
-          max_tokens: 1000,
-          messages: [
-            {
-              role: "user",
-              content: prompt,
+      let response;
+      let tagText: string;
+      
+      // Get provider configuration
+      const providerConfig = MODEL_CONFIGS[this.settings.provider];
+      
+      switch (this.settings.provider) {
+        case "anthropic":
+          response = await requestUrl({
+            url: providerConfig.apiUrl,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": this.settings.apiKey,
+              "anthropic-version": "2023-06-01",
             },
-          ],
-        }),
-      });
-
-      if (response.status !== 200) {
-        throw new Error(
-          `API returned status code ${response.status}: ${JSON.stringify(
-            response.json
-          )}`
-        );
+            body: JSON.stringify({
+              model: this.settings.modelName,
+              max_tokens: 1000,
+              messages: [
+                {
+                  role: "user",
+                  content: prompt,
+                },
+              ],
+            }),
+          });
+          
+          if (response.status !== 200) {
+            throw new Error(
+              `API returned status code ${response.status}: ${JSON.stringify(
+                response.json
+              )}`
+            );
+          }
+          
+          tagText = response.json.content[0].text;
+          break;
+          
+        case "openai":
+        case "mistral":
+        case "custom":
+          // OpenAI and Mistral use the same API format
+          // For custom endpoints, we assume OpenAI compatible format
+          const endpoint = this.settings.provider === "custom" 
+            ? this.settings.customEndpoint 
+            : providerConfig.apiUrl;
+            
+          response = await requestUrl({
+            url: endpoint,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${this.settings.apiKey}`,
+            },
+            body: JSON.stringify({
+              model: this.settings.modelName,
+              messages: [
+                {
+                  role: "user",
+                  content: prompt,
+                },
+              ],
+              max_tokens: 1000,
+              temperature: 0.3,
+            }),
+          });
+          
+          if (response.status !== 200) {
+            throw new Error(
+              `API returned status code ${response.status}: ${JSON.stringify(
+                response.json
+              )}`
+            );
+          }
+          
+          tagText = response.json.choices[0].message.content;
+          break;
+          
+        case "google":
+          // Google Gemini has a different API format
+          const apiEndpoint = `${providerConfig.apiUrl}${this.settings.modelName}:generateContent?key=${this.settings.apiKey}`;
+          
+          response = await requestUrl({
+            url: apiEndpoint,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: prompt }],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 1000,
+              },
+            }),
+          });
+          
+          if (response.status !== 200) {
+            throw new Error(
+              `API returned status code ${response.status}: ${JSON.stringify(
+                response.json
+              )}`
+            );
+          }
+          
+          tagText = response.json.candidates[0].content.parts[0].text;
+          break;
+          
+        default:
+          throw new Error(`Unknown provider: ${this.settings.provider}`);
       }
-
-      const result = response.json;
-      const tagText = result.content[0].text;
 
       // Split by commas and trim whitespace
       return tagText
@@ -264,7 +468,7 @@ export default class AITaggerPlugin extends Plugin {
         .map((tag: string) => tag.trim())
         .filter((tag: string) => tag.length > 0);
     } catch (error) {
-      console.error("Error calling Claude API:", error);
+      console.error(`Error calling ${this.settings.provider} API:`, error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to generate tags: ${errorMessage}`);
     }
@@ -386,10 +590,59 @@ class AITaggerSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
+    // AI Provider selection
+    new Setting(containerEl)
+      .setName("AI Provider")
+      .setDesc("Select which AI provider to use for generating tags.")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("anthropic", "Anthropic (Claude)")
+          .addOption("openai", "OpenAI (GPT)")
+          .addOption("mistral", "Mistral AI")
+          .addOption("google", "Google (Gemini)")
+          .addOption("custom", "Custom Endpoint (OpenAI Compatible)")
+          .setValue(this.plugin.settings.provider)
+          .onChange(async (value) => {
+            const newProvider = value as AIProvider;
+            this.plugin.settings.provider = newProvider;
+            
+            // Update model to default for the selected provider
+            if (newProvider !== "custom") {
+              this.plugin.settings.modelName = MODEL_CONFIGS[newProvider].defaultModel;
+            }
+            
+            await this.plugin.saveSettings();
+            this.display(); // Refresh to show provider-specific options
+          });
+        return dropdown;
+      });
+
+    // Custom endpoint setting (only shown for custom provider)
+    if (this.plugin.settings.provider === "custom") {
+      new Setting(containerEl)
+        .setName("Custom API Endpoint")
+        .setDesc("Enter the URL for your custom OpenAI-compatible API endpoint.")
+        .addText((text) =>
+          text
+            .setPlaceholder("https://your-api-endpoint.com/v1/chat/completions")
+            .setValue(this.plugin.settings.customEndpoint)
+            .onChange(async (value) => {
+              this.plugin.settings.customEndpoint = value;
+              await this.plugin.saveSettings();
+            })
+        );
+    }
+
+    // Get the current provider config
+    const providerConfig = MODEL_CONFIGS[this.plugin.settings.provider];
+    
+    // API Key with provider-specific description
     new Setting(containerEl)
       .setName("API key")
       .setDesc(
-        "Your Anthropic API key. Required to use the AI service. Get it from https://console.anthropic.com/ if you don't have one already. We recommend using a dedicated key for this plugin."
+        `Your ${this.plugin.settings.provider === "custom" ? "" : this.plugin.settings.provider} API key. Required to use the AI service. ${
+          providerConfig.apiKeyUrl ? `Get it from ${providerConfig.apiKeyUrl} if you don't have one already.` : ""
+        } We recommend using a dedicated key for this plugin.`
       )
       .addText((text) =>
         text
@@ -401,21 +654,29 @@ class AITaggerSettingTab extends PluginSettingTab {
           })
       );
 
+    // AI model selection (provider-specific)
     new Setting(containerEl)
       .setName("AI model")
       .setDesc("Choose which AI model to use for tag generation.")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("claude-3-5-sonnet-20240620", "Claude 3.5 Sonnet")
-          .addOption("claude-3-opus-20240229", "Claude 3 Opus")
-          .addOption("claude-3-sonnet-20240229", "Claude 3 Sonnet")
-          .addOption("claude-3-haiku-20240307", "Claude 3 Haiku")
-          .setValue(this.plugin.settings.modelName)
+      .addDropdown((dropdown) => {
+        // Add models for the selected provider
+        providerConfig.models.forEach(model => {
+          dropdown.addOption(model.id, model.name);
+        });
+        
+        // If current model isn't in the list, add it
+        if (!providerConfig.models.some(m => m.id === this.plugin.settings.modelName)) {
+          dropdown.addOption(this.plugin.settings.modelName, this.plugin.settings.modelName + " (Custom)");
+        }
+        
+        dropdown.setValue(this.plugin.settings.modelName)
           .onChange(async (value) => {
             this.plugin.settings.modelName = value;
             await this.plugin.saveSettings();
-          })
-      );
+          });
+        
+        return dropdown;
+      });
 
     new Setting(containerEl)
       .setName("Maximum number of tags")
