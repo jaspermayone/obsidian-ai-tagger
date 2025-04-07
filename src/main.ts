@@ -1,37 +1,26 @@
-import {
-  App,
-  MarkdownView,
-  Plugin,
-  TFile,
-} from "obsidian";
+import { MarkdownView, Plugin } from "obsidian";
 
-import { AITaggerSettings } from "./models/types";
 import { DEFAULT_SETTINGS } from "./models/constants";
-import { ConfirmModal } from "./ui/ConfirmModal";
-import { AITaggerSettingTab } from "./ui/AITaggerSettingTab";
-import { tagSingleNote, tagAllNotes } from "./services/noteService";
+import { AITaggerSettings } from "./models/types";
+import { tagAllNotes, tagSingleNote } from "./services/noteService";
 import { NotificationService } from "./services/notificationService";
-import { validateApiSettings, getModelName } from "./utils/validationUtils";
+import { AITaggerSettingTab } from "./ui/AITaggerSettingTab";
+import { ConfirmModal } from "./ui/ConfirmModal";
+import { getModelName, validateApiSettings } from "./utils/validationUtils";
 
 export default class AITaggerPlugin extends Plugin {
   settings: AITaggerSettings;
 
   async onload() {
     await this.loadSettings();
-    
+
     // Initialize language service with app instance and set language to Obsidian's language
-    const { i18n } = await import('./i18n');
+    const { i18n } = await import("./i18n");
     i18n.initializeApp(this.app);
-    
+
     // Always use Obsidian's language setting
     const obsidianLang = i18n.getObsidianLanguage();
     i18n.setLanguage(obsidianLang);
-    
-    // Only update settings if the language has changed
-    if (this.settings.language !== obsidianLang) {
-      this.settings.language = obsidianLang;
-      await this.saveSettings();
-    }
 
     // Create an icon in the left ribbon
     const ribbonIconEl = this.addRibbonIcon(
@@ -61,7 +50,7 @@ export default class AITaggerPlugin extends Plugin {
 
   onunload() {
     // Clean up the translation service's event listeners
-    import('./i18n').then(({ i18n }) => {
+    import("./i18n").then(({ i18n }) => {
       i18n.cleanup();
     });
   }
@@ -76,58 +65,64 @@ export default class AITaggerPlugin extends Plugin {
 
   private handleRibbonClick() {
     const validation = validateApiSettings(this.settings);
-    
+
     if (!validation.valid) {
       new ConfirmModal(
         this.app,
         "AI tagging configuration error",
-        () => {},
+        () => {
+          null;
+        },
         true,
         validation.error
       ).open();
       return;
     }
-    
+
     // Tag the current note directly when clicking the ribbon icon
     this.tagCurrentNote();
   }
 
   private checkAndTagCurrentNote(checking: boolean): boolean {
     const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    
+
     if (!markdownView) {
       return false;
     }
-    
+
     if (checking) {
       return true;
     }
 
     const validation = validateApiSettings(this.settings);
-    
+
     if (!validation.valid) {
       new ConfirmModal(
         this.app,
         "AI tagging configuration error",
-        () => {},
+        () => {
+          null;
+        },
         true,
         validation.error
       ).open();
       return true;
     }
-    
+
     this.tagCurrentNote();
     return true;
   }
 
   private confirmAndTagAllNotes() {
     const validation = validateApiSettings(this.settings);
-    
+
     if (!validation.valid) {
       new ConfirmModal(
         this.app,
         "AI tagging configuration error",
-        () => {},
+        () => {
+          null;
+        },
         true,
         validation.error
       ).open();
@@ -135,7 +130,7 @@ export default class AITaggerPlugin extends Plugin {
     }
 
     const modelName = getModelName(this.settings);
-    
+
     new ConfirmModal(
       this.app,
       `This will tag all notes in your vault using the ${modelName} model. This may take a while and consume API credits. Do you want to continue?`,
@@ -151,7 +146,7 @@ export default class AITaggerPlugin extends Plugin {
     }
 
     const file = activeView.file;
-    
+
     // Create a persistent notice
     const notification = NotificationService.showPersistentNotice(
       "Analyzing note content and generating tags..."
@@ -159,15 +154,18 @@ export default class AITaggerPlugin extends Plugin {
 
     try {
       const result = await tagSingleNote(this.app, file, this.settings);
-      
+
       if (result.success) {
-        notification.setSuccess(`Successfully added tags: ${result.tags.join(", ")}`);
+        notification.setSuccess(
+          `Successfully added tags: ${result.tags.join(", ")}`
+        );
       } else {
         notification.setError(`Error tagging note: ${result.error}`);
       }
     } catch (error) {
       console.error("Error tagging note:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       notification.setError(`Error tagging note: ${errorMessage}`);
     }
   }
@@ -180,7 +178,7 @@ export default class AITaggerPlugin extends Plugin {
 
     try {
       const result = await tagAllNotes(
-        this.app, 
+        this.app,
         this.settings,
         (processed, successful, total, currentFile) => {
           notification.setProgress(processed, successful, total, currentFile);
@@ -193,7 +191,8 @@ export default class AITaggerPlugin extends Plugin {
       );
     } catch (error) {
       console.error("Error during bulk tagging:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       notification.setError(`Error during bulk tagging: ${errorMessage}`);
     }
   }

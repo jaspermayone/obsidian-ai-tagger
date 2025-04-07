@@ -12,6 +12,15 @@ export const locales = {
   es,
 };
 
+export type LanguageCode = keyof typeof locales;
+export const languageCodes: LanguageCode[] = Object.keys(
+  locales
+) as LanguageCode[];
+
+export const languageCodesList = Object.entries(locales).map(([key]) => ({
+  code: key,
+}));
+
 export const languageNames = {
   ar: "العربية",
   de: "Deutsch",

@@ -14,7 +14,6 @@ export enum ServiceTypeEnum {
   CLOUD = "Cloud Service",
   LOCAL = "Local Service",
 }
-
 export interface AITaggerSettings {
   provider: AIProvider;
   apiKey: string;
