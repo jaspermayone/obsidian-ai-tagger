@@ -1,0 +1,86 @@
+{
+  "settings": {
+    "title": "AI Tagger Einstellungen",
+    "provider": {
+      "title": "KI-Anbieter",
+      "desc": "Wählen Sie, welchen KI-Anbieter Sie für die Generierung von Tags verwenden möchten.",
+      "anthropic": "Anthropic (Claude)",
+      "openai": "OpenAI (GPT)",
+      "mistral": "Mistral AI",
+      "google": "Google (Gemini)",
+      "custom": "Benutzerdefinierter Endpunkt (OpenAI-kompatibel)"
+    },
+    "customEndpoint": {
+      "title": "Benutzerdefinierter API-Endpunkt",
+      "desc": "Geben Sie die URL für Ihren benutzerdefinierten OpenAI-kompatiblen API-Endpunkt ein.",
+      "placeholder": "https://your-api-endpoint.com/v1/chat/completions"
+    },
+    "apiKey": {
+      "title": "API-Schlüssel",
+      "desc": "Ihr {provider} API-Schlüssel. Erforderlich, um den KI-Dienst zu nutzen.",
+      "getKey": "Holen Sie ihn von {url}, wenn Sie noch keinen haben.",
+      "recommendation": "Wir empfehlen, einen dedizierten Schlüssel für dieses Plugin zu verwenden.",
+      "placeholder": "Geben Sie Ihren API-Schlüssel ein"
+    },
+    "model": {
+      "title": "KI-Modell",
+      "desc": "Wählen Sie, welches KI-Modell für die Tag-Generierung verwendet werden soll.",
+      "custom": "{model} (Benutzerdefiniert)"
+    },
+    "maxTags": {
+      "title": "Maximale Anzahl an Tags",
+      "desc": "Legen Sie die maximale Anzahl an Tags fest, die pro Notiz generiert werden sollen."
+    },
+    "promptStyle": {
+      "title": "Prompt-Stil",
+      "desc": "Wählen Sie einen vordefinierten Prompt-Stil oder erstellen Sie Ihren eigenen benutzerdefinierten Prompt.",
+      "standard": "Standard",
+      "descriptive": "Beschreibend",
+      "academic": "Akademisch",
+      "concise": "Prägnant",
+      "custom": "Benutzerdefiniert"
+    },
+    "customPrompt": {
+      "title": "Benutzerdefinierte Prompt-Vorlage",
+      "desc": "Passen Sie den an die KI gesendeten Prompt an. Verwenden Sie {maxTags} und {content} als Platzhalter."
+    },
+    "currentPrompt": {
+      "title": "Aktuelle Prompt-Vorlage",
+      "desc": "Dies ist die Prompt-Vorlage, die verwendet wird (schreibgeschützt). Wechseln Sie zu Benutzerdefiniert, wenn Sie sie bearbeiten möchten."
+    },
+    "language": {
+      "title": "Sprache",
+      "desc": "Wählen Sie die Sprache für die Plugin-Oberfläche."
+    }
+  },
+  "modals": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "settings": "Einstellungen öffnen",
+    "configError": "KI-Tagging Konfigurationsfehler",
+    "tagAll": "Dies wird alle Notizen in Ihrem Vault mit dem Modell {model} taggen. Dies kann einige Zeit dauern und API-Guthaben verbrauchen. Möchten Sie fortfahren?"
+  },
+  "notices": {
+    "noActiveNote": "Keine aktive Notiz zum Taggen",
+    "analyzing": "Analysiere Notizinhalt und generiere Tags...",
+    "tagSuccess": "Tags erfolgreich hinzugefügt: {tags}",
+    "tagError": "Fehler beim Taggen der Notiz: {error}",
+    "startingBulk": "Beginne mit dem Taggen von Notizen...",
+    "processingNote": "Verarbeite: {file}\nFortschritt: {processed}/{total} ({successful} erfolgreich)",
+    "bulkComplete": "Tagging von {successful}/{total} Notizen erfolgreich abgeschlossen",
+    "bulkError": "Fehler beim Massen-Tagging: {error}"
+  },
+  "errors": {
+    "apiKeyMissing": "API-Schlüssel nicht konfiguriert. Bitte fügen Sie Ihren API-Schlüssel in den Plugin-Einstellungen hinzu.",
+    "endpointMissing": "Benutzerdefinierter API-Endpunkt nicht konfiguriert. Bitte fügen Sie Ihre Endpunkt-URL in den Plugin-Einstellungen hinzu.",
+    "apiError": "Fehler beim Generieren von Tags: {error}",
+    "unknownProvider": "Unbekannter Anbieter: {provider}"
+  },
+  "commands": {
+    "tagCurrent": "Aktuelle Notiz mit KI taggen",
+    "tagAll": "Alle Notizen mit KI taggen"
+  },
+  "ribbon": {
+    "tooltip": "Auto-Tagging mit KI"
+  }
+}

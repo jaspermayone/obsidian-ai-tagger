@@ -19,10 +19,19 @@ export default class AITaggerPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
     
-    // Initialize language from settings
-    import('./i18n').then(({ i18n }) => {
-      i18n.setLanguage(this.settings.language);
-    });
+    // Initialize language service with app instance and set language to Obsidian's language
+    const { i18n } = await import('./i18n');
+    i18n.initializeApp(this.app);
+    
+    // Always use Obsidian's language setting
+    const obsidianLang = i18n.getObsidianLanguage();
+    i18n.setLanguage(obsidianLang);
+    
+    // Only update settings if the language has changed
+    if (this.settings.language !== obsidianLang) {
+      this.settings.language = obsidianLang;
+      await this.saveSettings();
+    }
 
     // Create an icon in the left ribbon
     const ribbonIconEl = this.addRibbonIcon(
@@ -51,7 +60,10 @@ export default class AITaggerPlugin extends Plugin {
   }
 
   onunload() {
-    // Nothing specific to clean up
+    // Clean up the translation service's event listeners
+    import('./i18n').then(({ i18n }) => {
+      i18n.cleanup();
+    });
   }
 
   async loadSettings() {

@@ -1,8 +1,8 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { AIProvider } from "../models/types";
-import { MODEL_CONFIGS, PROMPT_TEMPLATES } from "../models/constants";
+import { i18n } from "../i18n";
 import AITaggerPlugin from "../main";
-import { i18n, languageNames } from "../i18n";
+import { MODEL_CONFIGS, PROMPT_TEMPLATES } from "../models/constants";
+import { AIProvider } from "../models/types";
 
 export class AITaggerSettingTab extends PluginSettingTab {
   plugin: AITaggerPlugin;
@@ -16,43 +16,26 @@ export class AITaggerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    this.addLanguageSection(containerEl);
     this.addProviderSection(containerEl);
     this.addApiSection(containerEl);
     this.addTaggingOptionsSection(containerEl);
     this.addPromptSection(containerEl);
   }
-  
-  private addLanguageSection(containerEl: HTMLElement): void {
-    new Setting(containerEl)
-      .setName(i18n.t("settings.language.title"))
-      .setDesc(i18n.t("settings.language.desc"))
-      .addDropdown((dropdown) => {
-        // Add all supported languages
-        Object.entries(languageNames).forEach(([code, name]) => {
-          dropdown.addOption(code, name);
-        });
-        
-        dropdown
-          .setValue(this.plugin.settings.language)
-          .onChange(async (value) => {
-            this.plugin.settings.language = value;
-            i18n.setLanguage(value);
-            await this.plugin.saveSettings();
-            this.display(); // Refresh the UI with the new language
-          });
-        return dropdown;
-      });
-  }
 
   private addProviderSection(containerEl: HTMLElement): void {
+    new Setting(containerEl);
+    // setting for cloud vs local service
+
     // AI Provider selection
     new Setting(containerEl)
       .setName(i18n.t("settings.provider.title"))
       .setDesc(i18n.t("settings.provider.desc"))
       .addDropdown((dropdown) => {
         dropdown
-          .addOption(AIProvider.Anthropic, i18n.t("settings.provider.anthropic"))
+          .addOption(
+            AIProvider.Anthropic,
+            i18n.t("settings.provider.anthropic")
+          )
           .addOption(AIProvider.OpenAI, i18n.t("settings.provider.openai"))
           .addOption(AIProvider.Mistral, i18n.t("settings.provider.mistral"))
           .addOption(AIProvider.Google, i18n.t("settings.provider.google"))
@@ -96,18 +79,23 @@ export class AITaggerSettingTab extends PluginSettingTab {
     const providerConfig = MODEL_CONFIGS[this.plugin.settings.provider];
 
     // API Key with provider-specific description
-    const providerName = this.plugin.settings.provider === AIProvider.Custom 
-      ? "" 
-      : this.plugin.settings.provider;
-      
+    const providerName =
+      this.plugin.settings.provider === AIProvider.Custom
+        ? ""
+        : this.plugin.settings.provider;
+
     new Setting(containerEl)
       .setName(i18n.t("settings.apiKey.title"))
       .setDesc(
-        i18n.t("settings.apiKey.desc", { provider: providerName }) + " " +
-        (providerConfig.apiKeyUrl
-          ? i18n.t("settings.apiKey.getKey", { url: providerConfig.apiKeyUrl })
-          : "") + " " +
-        i18n.t("settings.apiKey.recommendation")
+        i18n.t("settings.apiKey.desc", { provider: providerName }) +
+          " " +
+          (providerConfig.apiKeyUrl
+            ? i18n.t("settings.apiKey.getKey", {
+                url: providerConfig.apiKeyUrl,
+              })
+            : "") +
+          " " +
+          i18n.t("settings.apiKey.recommendation")
       )
       .addText((text) =>
         text
@@ -137,7 +125,9 @@ export class AITaggerSettingTab extends PluginSettingTab {
         ) {
           dropdown.addOption(
             this.plugin.settings.modelName,
-            i18n.t("settings.model.custom", { model: this.plugin.settings.modelName })
+            i18n.t("settings.model.custom", {
+              model: this.plugin.settings.modelName,
+            })
           );
         }
 

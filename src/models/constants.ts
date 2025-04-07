@@ -1,4 +1,9 @@
-import { AIProvider, AITaggerSettings, ProviderConfig } from "./types";
+import {
+  AIProvider,
+  AITaggerSettings,
+  ProviderConfig,
+  ServiceTypeEnum,
+} from "./types";
 
 // Define prompt templates
 export const PROMPT_TEMPLATES = {
@@ -67,6 +72,7 @@ export const MODEL_CONFIGS: Record<AIProvider, ProviderConfig> = {
 };
 
 export const DEFAULT_SETTINGS: AITaggerSettings = {
+  serviceType: ServiceTypeEnum.CLOUD,
   provider: AIProvider.Anthropic,
   apiKey: "",
   modelName: MODEL_CONFIGS[AIProvider.Anthropic].defaultModel,
@@ -74,5 +80,4 @@ export const DEFAULT_SETTINGS: AITaggerSettings = {
   promptOption: "standard",
   promptTemplate: PROMPT_TEMPLATES.standard,
   customEndpoint: "",
-  language: "en",
 };

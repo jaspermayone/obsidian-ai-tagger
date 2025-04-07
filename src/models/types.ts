@@ -8,29 +8,12 @@ export enum AIProvider {
   Custom = "custom",
 }
 
-export type LanguageCode =
-  | "ar" // Arabic
-  | "cs" // Czech
-  | "da" // Danish
-  | "de" // German
-  | "en" // English
-  | "es" // Spanish
-  | "fr" // French
-  | "id" // Indonesian
-  | "it" // Italian
-  | "ja" // Japanese
-  | "ko" // Korean
-  | "nl" // Dutch
-  | "no" // Norwegian
-  | "pl" // Polish
-  | "pt" // Portuguese
-  | "pt-BR" // Brazilian Portuguese
-  | "ro" // Romanian
-  | "ru" // Russian
-  | "tr" // Turkish
-  | "uk" // Ukrainian
-  | "zh" // Chinese (Simplified)
-  | "zh-TW"; // Chinese (Traditional)
+export type ServiceType = "Cloud Service" | "Local Service";
+
+export enum ServiceTypeEnum {
+  CLOUD = "Cloud Service",
+  LOCAL = "Local Service",
+}
 
 export interface AITaggerSettings {
   provider: AIProvider;
@@ -40,7 +23,7 @@ export interface AITaggerSettings {
   promptOption: string;
   promptTemplate: string;
   customEndpoint: string;
-  language: LanguageCode;
+  serviceType: ServiceType;
 }
 
 export interface ModelInfo {
