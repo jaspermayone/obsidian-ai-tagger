@@ -54,7 +54,7 @@ export const MODEL_CONFIGS: Record<AIProvider, ProviderConfig> = {
     apiKeyUrl: "https://console.mistral.ai/api-keys/",
   },
   [AIProvider.Google]: {
-    apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/",
+    apiUrl: "https://generativelanguage.googleapis.com/v1/models/",
     models: [
       { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
       { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
