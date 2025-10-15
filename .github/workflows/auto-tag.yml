@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'manifest.json'
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
 
 jobs:
   tag:
