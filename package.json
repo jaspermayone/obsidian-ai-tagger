@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-ai-tagger",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"description": "Automatically tag your notes using AI and update frontmatter with generated tags",
 	"main": "main.js",
 	"scripts": {
