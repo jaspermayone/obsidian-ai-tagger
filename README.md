@@ -1,51 +1,60 @@
 # AI Tagger for Obsidian
 
-This Obsidian plugin uses Claude AI to automatically generate tags for your notes and add them to the frontmatter. It analyzes the content of your notes and suggests relevant tags based on the text.
+This Obsidian plugin uses AI to automatically generate tags for your notes and add them to the frontmatter. It analyzes the content of your notes and suggests relevant tags based on the text.
 
 ## Features
 
-- Automatically generate tags for your notes using Claude AI
+- Automatically generate tags for your notes using AI
+- Support for multiple AI providers: Anthropic (Claude), OpenAI (GPT), Mistral AI, Google (Gemini), OpenRouter, and custom endpoints
 - Add the generated tags to your note's frontmatter
 - Tag a single note or batch tag all notes in your vault
 - Customize the prompt used to generate tags
-- Choose from different Claude models
+- Choose from different AI models
 - Configure maximum number of tags per note
 
 ## Installation
 
 1. In Obsidian, go to Settings > Community plugins
 2. Disable Safe mode
-3. Click "Browse" and search for "Claude AI Tagger"
+3. Click "Browse" and search for "AI Tagger"
 4. Install the plugin
 5. Enable the plugin after installation
 
 Alternatively, you can manually install the plugin:
 
 1. Download the `main.js`, `styles.css`, and `manifest.json` files
-2. Create a folder named `claude-ai-tagger` in your vault's `.obsidian/plugins/` directory
+2. Create a folder named `obsidian-ai-tagger` in your vault's `.obsidian/plugins/` directory
 3. Place the downloaded files in this folder
 4. Enable the plugin in Obsidian's Community Plugins settings
 
 ## Setup
 
-Before using the plugin, you need to configure your Claude API key:
+Before using the plugin, you need to configure your AI provider and API key:
 
-1. Get a Claude API key from [Anthropic's Console](https://console.anthropic.com/)
-2. In Obsidian, go to Settings > Claude AI Tagger
-3. Enter your API key in the appropriate field
-4. Configure other settings as desired
+1. Get an API key from your chosen provider:
+   - [Anthropic (Claude)](https://console.anthropic.com/)
+   - [OpenAI (GPT)](https://platform.openai.com/api-keys)
+   - [Mistral AI](https://console.mistral.ai/api-keys/)
+   - [Google (Gemini)](https://aistudio.google.com/app/apikey)
+   - [OpenRouter](https://openrouter.ai/keys) - Access to multiple models through one API
+   - Or use your own custom OpenAI-compatible endpoint
+2. In Obsidian, go to Settings > AI Tagger
+3. Select your AI provider from the dropdown
+4. Enter your API key in the appropriate field
+5. Choose your preferred model
+6. Configure other settings as desired
 
 ## Usage
 
 ### Tag Current Note
 
 1. Open the note you want to tag
-2. Use the command palette (Ctrl/Cmd + P) and search for "Tag current note with Claude"
+2. Use the command palette (Ctrl/Cmd + P) and search for "Tag current note with AI"
 3. The plugin will analyze your note and add relevant tags to the frontmatter
 
 ### Tag All Notes
 
-1. Use the command palette (Ctrl/Cmd + P) and search for "Tag all notes with Claude"
+1. Use the command palette (Ctrl/Cmd + P) and search for "Tag all notes with AI"
 2. Confirm the action in the dialog that appears
 3. The plugin will process all notes in your vault and add tags to each one
 
@@ -53,14 +62,15 @@ You can also use the ribbon icon (tag symbol) to access these commands.
 
 ## Settings
 
-- **Claude API Key**: Your Anthropic API key for Claude
-- **Claude Model**: Choose which Claude model to use (Claude 3.5 Sonnet, Claude 3 Opus, etc.)
+- **AI Provider**: Choose which AI provider to use (Anthropic, OpenAI, Mistral, Google, OpenRouter, or Custom)
+- **API Key**: Your API key for the selected provider
+- **AI Model**: Choose which model to use (options vary by provider)
 - **Maximum Number of Tags**: Set how many tags should be generated per note (1-20)
-- **Prompt Template**: Customize the prompt sent to Claude to generate tags
+- **Prompt Style**: Choose from predefined prompt styles or create your own custom prompt
 
 ## Customizing the Prompt
 
-You can customize the prompt sent to Claude using the following placeholders:
+You can customize the prompt sent to the AI using the following placeholders:
 
 - `{maxTags}`: Will be replaced with the maximum number of tags setting
 - `{content}`: Will be replaced with the note content

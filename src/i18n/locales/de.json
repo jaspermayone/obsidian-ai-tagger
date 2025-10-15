@@ -8,6 +8,7 @@
       "openai": "OpenAI (GPT)",
       "mistral": "Mistral AI",
       "google": "Google (Gemini)",
+      "openrouter": "OpenRouter",
       "custom": "Benutzerdefinierter Endpunkt (OpenAI-kompatibel)"
     },
     "customEndpoint": {

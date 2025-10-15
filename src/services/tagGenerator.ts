@@ -54,6 +54,7 @@ async function fetchTagsFromProvider(
 
     case AIProvider.OpenAI:
     case AIProvider.Mistral:
+    case AIProvider.OpenRouter:
     case AIProvider.Custom:
       const endpoint =
         settings.provider === AIProvider.Custom

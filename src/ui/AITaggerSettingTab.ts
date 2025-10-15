@@ -39,6 +39,7 @@ export class AITaggerSettingTab extends PluginSettingTab {
           .addOption(AIProvider.OpenAI, i18n.t("settings.provider.openai"))
           .addOption(AIProvider.Mistral, i18n.t("settings.provider.mistral"))
           .addOption(AIProvider.Google, i18n.t("settings.provider.google"))
+          .addOption(AIProvider.OpenRouter, i18n.t("settings.provider.openrouter"))
           .addOption(AIProvider.Custom, i18n.t("settings.provider.custom"))
           .setValue(this.plugin.settings.provider)
           .onChange(async (value) => {
