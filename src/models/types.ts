@@ -5,6 +5,7 @@ export enum AIProvider {
   OpenAI = "openai",
   Mistral = "mistral",
   Google = "google",
+  OpenRouter = "openrouter",
   Custom = "custom",
 }
 

@@ -63,6 +63,19 @@ export const MODEL_CONFIGS: Record<AIProvider, ProviderConfig> = {
     defaultModel: "gemini-1.5-flash",
     apiKeyUrl: "https://aistudio.google.com/app/apikey",
   },
+  [AIProvider.OpenRouter]: {
+    apiUrl: "https://openrouter.ai/api/v1/chat/completions",
+    models: [
+      { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+      { id: "openai/gpt-4o", name: "GPT-4o" },
+      { id: "openai/gpt-4-turbo", name: "GPT-4 Turbo" },
+      { id: "google/gemini-pro-1.5", name: "Gemini Pro 1.5" },
+      { id: "meta-llama/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
+      { id: "mistralai/mistral-large", name: "Mistral Large" },
+    ],
+    defaultModel: "anthropic/claude-3.5-sonnet",
+    apiKeyUrl: "https://openrouter.ai/keys",
+  },
   [AIProvider.Custom]: {
     apiUrl: "",
     models: [{ id: "custom-model", name: "Custom Model" }],
