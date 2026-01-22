@@ -186,9 +186,22 @@ export default class AITaggerPlugin extends Plugin {
       );
 
       // Final notice with completion message
-      notification.setSuccess(
-        `Completed tagging ${result.successful}/${result.total} notes successfully`
-      );
+      if (result.failed > 0 && result.successful === 0) {
+        // All notes failed - show error with details
+        notification.setError(
+          `Failed to tag all ${result.total} notes.\n${result.lastError || "Unknown error"}`
+        );
+      } else if (result.failed > 0) {
+        // Some notes failed - show mixed result
+        notification.setError(
+          `Tagged ${result.successful}/${result.total} notes. ${result.failed} failed.\n${result.lastError || ""}`
+        );
+      } else {
+        // All notes succeeded
+        notification.setSuccess(
+          `Completed tagging ${result.successful}/${result.total} notes successfully`
+        );
+      }
     } catch (error) {
       console.error("Error during bulk tagging:", error);
       const errorMessage =

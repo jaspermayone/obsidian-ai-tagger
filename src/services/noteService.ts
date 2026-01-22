@@ -61,10 +61,12 @@ export async function tagAllNotes(
   app: App,
   settings: AITaggerSettings,
   progressCallback?: (processed: number, successful: number, total: number, currentFile: string) => void
-): Promise<{ successful: number, total: number }> {
+): Promise<{ successful: number, total: number, failed: number, lastError?: string }> {
   const files = app.vault.getMarkdownFiles();
   let processed = 0;
   let successful = 0;
+  let failed = 0;
+  let lastError: string | undefined;
 
   for (const file of files) {
     try {
@@ -72,17 +74,19 @@ export async function tagAllNotes(
       if (progressCallback) {
         progressCallback(processed, successful, files.length, file.path);
       }
-      
+
       const content = await app.vault.read(file);
       const tags = await generateTags(content, settings);
       await updateNoteFrontmatter(app, file, tags);
       successful++;
     } catch (error) {
       console.error(`Error tagging note ${file.path}:`, error);
+      failed++;
+      lastError = error instanceof Error ? error.message : String(error);
     }
 
     processed++;
   }
 
-  return { successful, total: files.length };
+  return { successful, total: files.length, failed, lastError };
 }
